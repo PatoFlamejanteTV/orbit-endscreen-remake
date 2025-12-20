@@ -7,7 +7,9 @@ from collections import defaultdict
 import postokeyframes
 import math
 
-random.seed(14) #<---- if u change this ur gonna have to mess with group 9996 and the block below it so i made it fixed
+random.seed(14) #<---- some seeds have buggy player position most are fineish tho
+
+player = True
 
 FPS = 25
 
@@ -15,7 +17,7 @@ num_of_balls = 120
 global_time = 0
 drop_time = 20
 
-player_size = 100
+player_size = 80
 
 body_list = []
 body_info_list = []
@@ -65,6 +67,8 @@ def main():
                 running = False
             elif event.type == pygame.KEYDOWN:
                 quit()
+            if global_time == num_of_balls + 200:
+                quit()
         
         for i in range(num_of_balls):
             if global_time == drop_time*i:
@@ -79,7 +83,7 @@ def main():
                 space.add(ball_body, ball_shape)
                 ball_body.apply_impulse_at_local_point(pymunk.Vec2d(10-random.randint(0,20), 0), (0, 0))
         
-        if global_time == (50)*drop_time:
+        if global_time == (50)*drop_time and player:
             cube_mass = 1
             size = player_size
             cube_moment = pymunk.moment_for_box(cube_mass, (size,size))

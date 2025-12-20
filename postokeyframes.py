@@ -63,7 +63,7 @@ def run(pos_list,drop_time,FPS):
                     made_groups.append(info[0])
                     if orb == 1022 or orb == 1330:
                         editor.add_object(
-                            NeditGD.Object(id=orb, x=info[1]-300, y=info[2]*-1-210, groups=[len(made_groups),9997,9995], scale=info[5]/15, editor_layer_1=2))
+                            NeditGD.Object(id=orb, x=info[1]-300, y=info[2]*-1-210, groups=[len(made_groups),9997,9995], scale=info[5]/15, animation_speed=0,editor_layer_1=2))
                     else:
                         editor.add_object(
                             NeditGD.Object(id=orb, x=info[1]-300, y=info[2]*-1-210, groups=[len(made_groups),9997,9995], scale=info[5]/15))
@@ -71,21 +71,21 @@ def run(pos_list,drop_time,FPS):
                 spawns.append(info[3])
             elif i > 0:
                 editor.add_object(
-                            NeditGD.Object(id=2015, x=((info[3]+(i*step_quality)) / FPS) * 311.6, y=-60, rotate_degrees=math.degrees(info[4])*-1,duration=step_quality/FPS))
+                            NeditGD.Object(id=2015, x=((info[3]+(i*step_quality)) / FPS) * 311.6, y=-60, rotate_degrees=math.degrees(info[4]),duration=step_quality/FPS))
                 editor.add_object(
-                            NeditGD.Object(id=1346, x=((info[3]+(i*step_quality)) / FPS) * 311.6, y=-120, rotate_degrees=math.degrees(n[i-1][4]-info[4])*-1, target=9998,target_pos=9996,duration=step_quality/FPS))
+                            NeditGD.Object(id=1346, x=((info[3]+(i*step_quality)) / FPS) * 311.6, y=-120, rotate_degrees=math.degrees(n[i-1][4]-info[4]), target=9998,target_pos=9996,duration=step_quality/FPS))
                 
 
-                rotated = rotate_point_origin((info[1]-n[i-1][1]),(info[2]-n[i-1][2]),info[4])
+                rotated = rotate_point_origin((info[1]-n[i-1][1]),(info[2]-n[i-1][2]),info[4]*-1)
                 editor.add_object(
                             NeditGD.Object(id=901, x=((info[3]+(i*step_quality)) / FPS) * 311.6, y=-90,move_x=rotated[0]*-1,move_y=rotated[1],small_step=True,target=9998,duration=step_quality/FPS))
 
             else:
-                rotated = rotate_point_origin((info[1]),(info[2]),info[4])
+                rotated = rotate_point_origin((info[1]),(info[2]),info[4]*-1)
                 editor.add_object(
-                        NeditGD.Object(id=1764,x=round((600/40)*15,2)+30,y=round((400/40)*15,2)+30+75+7.5,groups=[9996,9994],hide=True))
+                        NeditGD.Object(id=1764,x=round((600/40)*15,2)-7.5,y=round((400/40)*15,2)+60+15,groups=[9996,9994],hide=True))
                 editor.add_object(
-                        NeditGD.Object(id=1,x=round((600/40)*15,2)+30,y=round((400/40)*15,2)+75+7.5,hide=True,groups=[9994]))
+                        NeditGD.Object(id=1,x=round((600/40)*15,2)-7.5,y=round((400/40)*15,2)+30+15,hide=True,groups=[9994]))
                 editor.add_object(
                         NeditGD.Object(id=1613, x=((info[3]) / FPS) * 311.6, y=30))
                 #editor.add_object(
