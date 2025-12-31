@@ -71,8 +71,10 @@ def main():
             if global_time == num_of_balls + 200:
                 quit()
 
-        for i in range(num_of_balls):
-            if global_time == drop_time*i:
+        # Bolt: Optimized ball dropping logic from O(num_of_balls) to O(1)
+        if global_time % drop_time == 0:
+            i = global_time // drop_time
+            if i < num_of_balls:
                 ball_mass = 1
                 ball_radius = 40 + random.randint(1,20)
                 ball_moment = pymunk.moment_for_circle(ball_mass, 0, ball_radius)
@@ -108,21 +110,38 @@ def main():
         clock.tick(FPS*10)
 
 
+        # Bolt: Optimized data collection by pre-calculating constants and avoiding redundant rounding
+        scale_factor = 15.0 / 40.0
+        radius_factor = 30.0 / (40.0 * 2.0)
+
         for i, body in enumerate(space.bodies):
             if body.id not in body_map:
                 body_map[body.id] = len(body_list)
                 body_list.append(body.id)
             dropped = (body_map[body.id]+1)*drop_time
 
+            # Access position directly to avoid overhead if possible, though body.position is a property
+            pos = body.position
+            angle = body.angle
+
             shape = next(iter(body.shapes))
-            if isinstance(shape,pymunk.Circle):
+
+            # Pre-calculate common values
+            x_val = round(pos.x * scale_factor, 2)
+            y_val = round(pos.y * scale_factor, 2)
+            angle_val = round(angle, 2)
+
+            if isinstance(shape, pymunk.Circle):
                 radius = shape.radius
+                size_val = radius * radius_factor # Not rounded in original code?
+                # Original: radius/(40*2)*30
 
-                body_info_list.append([i+5000,round((body.position[0]/40)*15,2),round((body.position[1]/40)*15,2),dropped,round(body.angle,2),radius/(40*2)*30,False])# w clean code
+                body_info_list.append([i+5000, x_val, y_val, dropped, angle_val, size_val, False])
             else:
-                size = 50
+                size = 50.0
+                size_val = size * radius_factor
 
-                body_info_list.append([i+5000,round((body.position[0]/40)*15,2),round((body.position[1]/40)*15,2),dropped,round(body.angle,2),size/(40*2)*30,True])
+                body_info_list.append([i+5000, x_val, y_val, dropped, angle_val, size_val, True])
 
     pygame.quit()
 
