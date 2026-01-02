@@ -109,20 +109,28 @@ def main():
 
 
         for i, body in enumerate(space.bodies):
-            if body.id not in body_map:
-                body_map[body.id] = len(body_list)
-                body_list.append(body.id)
-            dropped = (body_map[body.id]+1)*drop_time
-
-            shape = next(iter(body.shapes))
-            if isinstance(shape,pymunk.Circle):
-                radius = shape.radius
-
-                body_info_list.append([i+5000,round((body.position[0]/40)*15,2),round((body.position[1]/40)*15,2),dropped,round(body.angle,2),radius/(40*2)*30,False])# w clean code
+            # Caching static body data to improve performance
+            if hasattr(body, 'cached_data'):
+                dropped, size_val, is_rect = body.cached_data
             else:
-                size = 50
+                if body.id not in body_map:
+                    body_map[body.id] = len(body_list)
+                    body_list.append(body.id)
+                dropped = (body_map[body.id]+1)*drop_time
 
-                body_info_list.append([i+5000,round((body.position[0]/40)*15,2),round((body.position[1]/40)*15,2),dropped,round(body.angle,2),size/(40*2)*30,True])
+                shape = next(iter(body.shapes))
+                if isinstance(shape,pymunk.Circle):
+                    radius = shape.radius
+                    size_val = radius/(40*2)*30
+                    is_rect = False
+                else:
+                    size = 50
+                    size_val = size/(40*2)*30
+                    is_rect = True
+
+                body.cached_data = (dropped, size_val, is_rect)
+
+            body_info_list.append([i+5000,round((body.position[0]/40)*15,2),round((body.position[1]/40)*15,2),dropped,round(body.angle,2),size_val,is_rect])# w clean code
 
     pygame.quit()
 
