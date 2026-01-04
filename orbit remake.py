@@ -63,13 +63,16 @@ def main():
     while running:
         global_time += 1
         #print(global_time)
+        if global_time == num_of_balls + 200:
+            quit()
+            running = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
                 quit()
-            if global_time == num_of_balls + 200:
-                quit()
+                running = False
 
         for i in range(num_of_balls):
             if global_time == drop_time*i:
@@ -109,20 +112,38 @@ def main():
 
 
         for i, body in enumerate(space.bodies):
-            if body.id not in body_map:
-                body_map[body.id] = len(body_list)
-                body_list.append(body.id)
-            dropped = (body_map[body.id]+1)*drop_time
+            try:
+                dropped, size_val, is_poly = body.bolt_cached_data
+            except AttributeError:
+                if body.id not in body_map:
+                    body_map[body.id] = len(body_list)
+                    body_list.append(body.id)
 
-            shape = next(iter(body.shapes))
-            if isinstance(shape,pymunk.Circle):
-                radius = shape.radius
+                dropped = (body_map[body.id]+1)*drop_time
+                shape = next(iter(body.shapes))
 
-                body_info_list.append([i+5000,round((body.position[0]/40)*15,2),round((body.position[1]/40)*15,2),dropped,round(body.angle,2),radius/(40*2)*30,False])# w clean code
-            else:
-                size = 50
+                if isinstance(shape, pymunk.Circle):
+                    radius = shape.radius
+                    # (radius / (40 * 2)) * 30
+                    # Keeping exact arithmetic order
+                    size_val = radius/(40*2)*30
+                    is_poly = False
+                else:
+                    size = 50
+                    size_val = size/(40*2)*30
+                    is_poly = True
 
-                body_info_list.append([i+5000,round((body.position[0]/40)*15,2),round((body.position[1]/40)*15,2),dropped,round(body.angle,2),size/(40*2)*30,True])
+                body.bolt_cached_data = (dropped, size_val, is_poly)
+
+            body_info_list.append([
+                i+5000,
+                round((body.position[0]/40)*15,2),
+                round((body.position[1]/40)*15,2),
+                dropped,
+                round(body.angle,2),
+                size_val,
+                is_poly
+            ])
 
     pygame.quit()
 
