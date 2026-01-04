@@ -74,7 +74,7 @@ def main():
         # ⚡ Bolt Optimization: Replaced O(N) loop with O(1) calculation
         if global_time != 0 and global_time % drop_time == 0:
             i = global_time // drop_time
-            if 0 <= i < num_of_balls:
+            if i < num_of_balls:
                 ball_mass = 1
                 ball_radius = 40 + random.randint(1,20)
                 ball_moment = pymunk.moment_for_circle(ball_mass, 0, ball_radius)
