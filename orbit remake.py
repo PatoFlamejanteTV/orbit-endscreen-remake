@@ -64,7 +64,6 @@ def main():
         global_time += 1
         #print(global_time)
         if global_time == num_of_balls + 200:
-            quit()
             running = False
 
         for event in pygame.event.get():
