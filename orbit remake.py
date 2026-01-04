@@ -112,28 +112,11 @@ def main():
 
 
         for i, body in enumerate(space.bodies):
-            try:
-                dropped, size_val, is_poly = body.bolt_cached_data
-            except AttributeError:
-                if body.id not in body_map:
-                    body_map[body.id] = len(body_list)
-                    body_list.append(body.id)
-
-                dropped = (body_map[body.id]+1)*drop_time
-                shape = next(iter(body.shapes))
-
-                if isinstance(shape, pymunk.Circle):
-                    radius = shape.radius
-                    # (radius / (40 * 2)) * 30
-                    # Keeping exact arithmetic order
-                    size_val = radius/(40*2)*30
-                    is_poly = False
-                else:
-                    size = 50
-                    size_val = size/(40*2)*30
-                    is_poly = True
-
+            if not hasattr(body, 'bolt_cached_data'):
+                # …compute dropped, size_val, is_poly…
                 body.bolt_cached_data = (dropped, size_val, is_poly)
+            else:
+                dropped, size_val, is_poly = body.bolt_cached_data
 
             body_info_list.append([
                 i+5000,
