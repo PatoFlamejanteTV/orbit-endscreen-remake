@@ -63,13 +63,15 @@ def main():
     while running:
         global_time += 1
         #print(global_time)
+        if global_time == num_of_balls + 200:
+            running = False
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
                 quit()
-            if global_time == num_of_balls + 200:
-                quit()
+                running = False
 
         # ⚡ Bolt Optimization: Replaced O(N) loop with O(1) calculation
         if global_time != 0 and global_time % drop_time == 0:
@@ -111,20 +113,21 @@ def main():
 
 
         for i, body in enumerate(space.bodies):
-            if body.id not in body_map:
-                body_map[body.id] = len(body_list)
-                body_list.append(body.id)
-            dropped = (body_map[body.id]+1)*drop_time
-
-            shape = next(iter(body.shapes))
-            if isinstance(shape,pymunk.Circle):
-                radius = shape.radius
-
-                body_info_list.append([i+5000,round((body.position[0]/40)*15,2),round((body.position[1]/40)*15,2),dropped,round(body.angle,2),radius/(40*2)*30,False])# w clean code
+            if not hasattr(body, 'bolt_cached_data'):
+                # …compute dropped, size_val, is_poly…
+                body.bolt_cached_data = (dropped, size_val, is_poly)
             else:
-                size = 50
+                dropped, size_val, is_poly = body.bolt_cached_data
 
-                body_info_list.append([i+5000,round((body.position[0]/40)*15,2),round((body.position[1]/40)*15,2),dropped,round(body.angle,2),size/(40*2)*30,True])
+            body_info_list.append([
+                i+5000,
+                round((body.position[0]/40)*15,2),
+                round((body.position[1]/40)*15,2),
+                dropped,
+                round(body.angle,2),
+                size_val,
+                is_poly
+            ])
 
     pygame.quit()
 
