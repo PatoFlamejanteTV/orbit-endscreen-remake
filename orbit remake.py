@@ -85,6 +85,7 @@ def main():
                 ball_shape = pymunk.Circle(ball_body, ball_radius)
                 ball_shape.elasticity = 0.5
                 ball_shape.friction = 1
+                ball_body.bolt_cached_data = (global_time, ball_radius, False)
                 space.add(ball_body, ball_shape)
                 ball_body.apply_impulse_at_local_point(pymunk.Vec2d(10-random.randint(0,20), 0), (0, 0))
 
@@ -97,6 +98,7 @@ def main():
             cube_shape = pymunk.Poly.create_box(cube_body,(size,size))
             cube_shape.friction = 0.7
             cube_shape.elasticity = 0.5
+            cube_body.bolt_cached_data = (global_time, size, True)
             space.add(cube_body,cube_shape)
 
 
@@ -113,11 +115,12 @@ def main():
 
 
         for i, body in enumerate(space.bodies):
-            if not hasattr(body, 'bolt_cached_data'):
-                # …compute dropped, size_val, is_poly…
-                body.bolt_cached_data = (dropped, size_val, is_poly)
-            else:
+            try:
                 dropped, size_val, is_poly = body.bolt_cached_data
+            except AttributeError:
+                # ⚡ Bolt: Safely skip bodies without cached data (e.g. if added via other means)
+                # In this codebase, only balls and cubes are dynamic bodies, and we init them above.
+                continue
 
             body_info_list.append([
                 i+5000,
