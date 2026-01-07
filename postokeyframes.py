@@ -1,5 +1,5 @@
 import NeditGD
-import random 
+import random
 from collections import defaultdict
 import math
 
@@ -28,17 +28,22 @@ def run(pos_list,drop_time,FPS):
 
     speed = 10.3761348898
     # Make all the necessary changes (add/delete objects)
-    groups = defaultdict(list)
-    for item in pos_list:
-        key = item[0] # Get the first value
-        groups[key].append(item)
+
+    # ⚡ Bolt Optimization: Accept pre-grouped dict to skip O(N) loop
+    if isinstance(pos_list, dict):
+        groups = pos_list
+    else:
+        groups = defaultdict(list)
+        for item in pos_list:
+            key = item[0] # Get the first value
+            groups[key].append(item)
 
     # Convert dictionary values to a list of lists if needed
     split_pos = list(groups.values())
 
     for i in range(len(split_pos)):
         split_pos[i] = split_pos[i][::step_quality]
-        
+
     editor.add_object(
         NeditGD.Object(id=2016,x=285,y=-68,groups=[9998]))
 
@@ -74,7 +79,7 @@ def run(pos_list,drop_time,FPS):
                             NeditGD.Object(id=2015, x=((info[3]+(i*step_quality)) / FPS) * 311.6, y=-60, rotate_degrees=math.degrees(info[4]),duration=step_quality/FPS))
                 editor.add_object(
                             NeditGD.Object(id=1346, x=((info[3]+(i*step_quality)) / FPS) * 311.6, y=-120, rotate_degrees=math.degrees(n[i-1][4]-info[4]), target=9998,target_pos=9996,duration=step_quality/FPS))
-                
+
 
                 rotated = rotate_point_origin((info[1]-n[i-1][1]),(info[2]-n[i-1][2]),info[4]*-1)
                 editor.add_object(
@@ -91,7 +96,7 @@ def run(pos_list,drop_time,FPS):
                 #editor.add_object(
                 #        NeditGD.Object(id=901, x=((info[3]) / FPS) * 311.6, y=-90,move_x=rotated[0]*-1,move_y=rotated[1],small_step=True,target=9998,duration=step_quality/FPS))
 
-                
+
 
     made_setups = []
 
@@ -113,11 +118,11 @@ def run(pos_list,drop_time,FPS):
                 )
             )
             made_setups.append(spawns[n])
-    
+
     editor.add_object(
         NeditGD.Object(id=901, x=0, y=0,move_x=offset[0],move_y=offset[1],small_step=True,target=9999))
     editor.add_object(
         NeditGD.Object(id=1612, x=0, y=-30))
-            
+
 
     editor.save_changes()

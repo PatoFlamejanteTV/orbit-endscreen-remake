@@ -21,10 +21,12 @@ player_size = 80
 
 body_list = []
 body_map = {}
-body_info_list = []
+# ⚡ Bolt Optimization: Use defaultdict to avoid O(N) grouping in post-processing
+body_info_groups = defaultdict(list)
 
 def quit():
-    postokeyframes.run(list(body_info_list),drop_time,FPS)
+    # ⚡ Bolt Optimization: Pass dict directly, avoiding O(N) copy and re-grouping
+    postokeyframes.run(body_info_groups,drop_time,FPS)
     pygame.quit()
 
 def main():
@@ -88,6 +90,9 @@ def main():
                 space.add(ball_body, ball_shape)
                 ball_body.apply_impulse_at_local_point(pymunk.Vec2d(10-random.randint(0,20), 0), (0, 0))
 
+                # Bolt Fix: Initialize cached data on creation
+                ball_body.bolt_cached_data = (global_time, ball_radius, False)
+
         if global_time == (50)*drop_time and player:
             cube_mass = 1
             size = player_size
@@ -99,6 +104,8 @@ def main():
             cube_shape.elasticity = 0.5
             space.add(cube_body,cube_shape)
 
+            # Bolt Fix: Initialize cached data on creation
+            cube_body.bolt_cached_data = (global_time, size, True)
 
 
         dt = 1.0 / FPS
@@ -113,13 +120,29 @@ def main():
 
 
         for i, body in enumerate(space.bodies):
-            if not hasattr(body, 'bolt_cached_data'):
-                # …compute dropped, size_val, is_poly…
-                body.bolt_cached_data = (dropped, size_val, is_poly)
-            else:
+            try:
                 dropped, size_val, is_poly = body.bolt_cached_data
+            except AttributeError:
+                # Fallback: attempt to calculate properties if cache is missing.
+                # 'dropped' time is unrecoverable, default to 0.
+                dropped = 0
+                is_poly = False
+                size_val = 10 # Default size
 
-            body_info_list.append([
+                # Attempt to guess type from shapes (if any)
+                if len(body.shapes) > 0:
+                    shape = list(body.shapes)[0] # pymunk bodies maintain a set of shapes
+                    if isinstance(shape, pymunk.Poly):
+                        is_poly = True
+                        size_val = 80 # Default for poly (player_size)
+                    elif isinstance(shape, pymunk.Circle):
+                        is_poly = False
+                        size_val = shape.radius
+
+                body.bolt_cached_data = (dropped, size_val, is_poly)
+
+            # ⚡ Bolt Optimization: Group by ID (i+5000) immediately
+            body_info_groups[i+5000].append([
                 i+5000,
                 round((body.position[0]/40)*15,2),
                 round((body.position[1]/40)*15,2),
