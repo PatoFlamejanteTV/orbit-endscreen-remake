@@ -117,7 +117,7 @@ def main():
         for i, body in enumerate(space.bodies):
             try:
                 dropped, size_val, is_poly = body.bolt_cached_data
-            except AttributeError:
+            except (AttributeError, ValueError):
                 # Fallback for bodies without cached data (e.g. if added externally or static)
                 # Attempt to deduce properties or use defaults to avoid crashing or disappearing
                 dropped = 0
@@ -125,7 +125,7 @@ def main():
                 size_val = 40 # Default radius
 
                 if body.shapes:
-                    shape = list(body.shapes)[0]
+                    shape = next(iter(body.shapes))
                     if isinstance(shape, pymunk.Poly):
                         is_poly = True
                         # Approximate size from poly's bounding box
