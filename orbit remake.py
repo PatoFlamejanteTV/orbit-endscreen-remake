@@ -128,8 +128,9 @@ def main():
                     shape = list(body.shapes)[0]
                     if isinstance(shape, pymunk.Poly):
                         is_poly = True
-                        # Approximate size from poly bounds or similar if needed,
-                        # but for this specific simulation, standard fallback is enough.
+                        # Approximate size from poly's bounding box
+                        bb = shape.bb
+                        size_val = (bb.right - bb.left)
                     elif isinstance(shape, pymunk.Circle):
                         size_val = shape.radius
 
