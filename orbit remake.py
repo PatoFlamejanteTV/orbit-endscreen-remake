@@ -112,12 +112,27 @@ def main():
         clock.tick(FPS*10)
 
 
+        # ⚡ Bolt Optimization: Use try-except block for faster attribute access in hot loop
+        # This avoids the overhead of hasattr() and handles the "cache miss" efficiently
         for i, body in enumerate(space.bodies):
-            if not hasattr(body, 'bolt_cached_data'):
-                # …compute dropped, size_val, is_poly…
-                body.bolt_cached_data = (dropped, size_val, is_poly)
-            else:
+            try:
                 dropped, size_val, is_poly = body.bolt_cached_data
+            except AttributeError:
+                dropped = 0
+                shape = next(iter(body.shapes))
+                if isinstance(shape, pymunk.Poly):
+                    is_poly = 1
+                    # Assume box, width is max x - min x of vertices
+                    verts = shape.get_vertices()
+                    # Vertices are in local coordinates
+                    xs = [v.x for v in verts]
+                    size_val = max(xs) - min(xs)
+                else:
+                    is_poly = 0
+                    # Assume circle
+                    size_val = shape.radius
+
+                body.bolt_cached_data = (dropped, size_val, is_poly)
 
             body_info_list.append([
                 i+5000,
