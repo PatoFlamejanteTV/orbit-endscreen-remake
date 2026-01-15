@@ -81,6 +81,7 @@ def main():
                 ball_radius = 40 + random.randint(1,20)
                 ball_moment = pymunk.moment_for_circle(ball_mass, 0, ball_radius)
                 ball_body = pymunk.Body(ball_mass, ball_moment)
+                ball_body.dropped = global_time
                 ball_body.position = ((600/num_of_balls)*random.randint(1,num_of_balls*2), -250)  # Starting position
                 ball_shape = pymunk.Circle(ball_body, ball_radius)
                 ball_shape.elasticity = 0.5
@@ -93,6 +94,7 @@ def main():
             size = player_size
             cube_moment = pymunk.moment_for_box(cube_mass, (size,size))
             cube_body = pymunk.Body(cube_mass, cube_moment)
+            cube_body.dropped = global_time
             cube_body.position = (600,-400)
             cube_shape = pymunk.Poly.create_box(cube_body,(size,size))
             cube_shape.friction = 0.7
@@ -113,11 +115,24 @@ def main():
 
 
         for i, body in enumerate(space.bodies):
-            if not hasattr(body, 'bolt_cached_data'):
-                # …compute dropped, size_val, is_poly…
-                body.bolt_cached_data = (dropped, size_val, is_poly)
-            else:
+            # ⚡ Bolt Optimization: Cache body properties to avoid re-calculation in hot loop
+            try:
                 dropped, size_val, is_poly = body.bolt_cached_data
+            except AttributeError:
+                dropped = getattr(body, 'dropped', 0)
+                is_poly = False
+                size_val = 0
+                if body.shapes:
+                    shape = next(iter(body.shapes))
+                    if isinstance(shape, pymunk.Poly):
+                        is_poly = True
+                        verts = shape.get_vertices()
+                        xs = [v.x for v in verts]
+                        size_val = max(xs) - min(xs)
+                    elif isinstance(shape, pymunk.Circle):
+                        size_val = shape.radius * 2
+
+                body.bolt_cached_data = (dropped, size_val, is_poly)
 
             body_info_list.append([
                 i+5000,
